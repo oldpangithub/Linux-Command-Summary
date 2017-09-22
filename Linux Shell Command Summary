@@ -1,0 +1,346 @@
+目  录
+第1章 系统工具类	3
+第2章 用户和用户标识类	3
+第3章 文件	3
+第4章 选择数据	5
+第5章 查看系统	6
+第6章 目录	6
+第7章 显示系统信息	7
+第8章 变量和系统变量	7
+第9章 内置命令工具	7
+第10章 线上查询及帮助命令	8
+第11章 压缩/解压缩命令	8
+第12章 其他	9
+第13章 待定义	10
+第14章 特殊符号	10
+14.1 >>、>重定向符号	10
+14.2 *	 表示匹配所有内容	11
+14.3 ..	 表示当前目录（位置）的上一级目录（位置）	11
+14.4 .	 表示当前目录（位置）	11
+14.5 $()	优先执行()内的命令，把结果留下	11
+14.6 &&	前一个命令执行成功后执行下一个命令。	11
+14.7 #	 井号 Linux中表示注释，Linux会忽略掉#后面的内容	11
+14.8 ~	 表示当前用户的家目录	11
+14.9 ^XX	只有三剑客和find支持的正则表达式，表示匹配以XX开头的行。	11
+14.10 {}	大括号表示生成一些序列，{}大括号内用"，"逗号分隔。	11
+14.11 | 	在egrep以及三剑客中，“|”代表或者。	11
+第15章 必会目录及文件	12
+第16章 vi/vim使用方法	13
+
+
+
+
+
+
+
+
+第1章 系统工具类
+命令	     [参数选项]   	  命令举例	                              实现效果
+uname	        -r	         uname -r	                              显示内核版本
+	            -m	         uname -m	                              显示32位/64位
+hostname	            	   hostname ｜hostname oldboy	           显示或修改主机名
+init		                   init （0123456）	                      切换系统运行级别
+			
+
+
+第2章 用户和用户标识类
+命令	 [参数选项]	命令举例	实现效果
+useradd		useradd newusername	创建用户
+passwd		passwd username	创建密码
+su	-	su - username	改变到超级用户或另一个用户标识
+whoami		whoami	查看当前用户的用户标识
+logout		logout或Ctrl+d	退出当前用户
+
+
+
+第3章 文件 
+命令	 [参数选项]	命令举例	实现效果
+touch		touch /directory/filename.txt	创建文件
+		touch /directory/filename{1..10}.txt	创建十个连续的文件
+		touch /directory1/filename1 /directory2/filename2	同时创建两个或多个文件
+echo		echo 'I am studying Linux.' >> /directory/filenam.txt	将内容写入文件
+vi/vim		vi/vim /directory/filename	使用vi/vim文本编辑器修改文件内容
+cat		cat /directory/filename	查看文件内容
+		cat >>filename<<EOF
+I am studying Linux.
+I am a Linuxer.
+EOF	将内容批量写入文件
+	-n	cat -n filename	打印文件内容及行号，-n包含空行
+	-b	cat -b filename	打印文件内容及行号，-b不包含空行
+cp		cp /directory1/filename /directory2	复制文件
+		cp /directory1/filename1 /directory1/filename2.bak	改名复制或备份
+	-r	cp -r /directory1/ /directory2/	复制目录及目录下所有内容
+	-p	cp -p /directory1/filename /directroy2	复制文件同时保持文件属性不变
+	-a(-pdr)	cp -a /directory1/ /directory2/	复制目录及目录下所有内容且保持文件属性不变
+	-t	find /source directory/ -type f -name "*" |xargs cp -t   /target directory/	将需要copy的文件名在前，copy目录在后的顺序更改为copy目录在前，需要copy的文件名在后，一般用在|xargs cp -t /target directory
+mv		mv /directory1/ /directory2/	移动文件
+rm		rm /directory/filename	删除文件
+	-f	rm -f /directory/filename
+或\rm -f /directory/filename	直接删除文件不提示
+	-r	rm -r /directory/	删除目录
+find	-type f 文件
+-type d 目录	find /directory/ -type f -name"^filename*"	查找此目录下所有符合条件的文件/目录
+	-name		查找文件名符合某个条件的文件
+	-mtime	find /directory/ -type f -mtime +7 |xargs rm -f	mtime参数是指文件的修改时间，例子是查找七天以前的文件并删除
+	-exec	find /directory/ -type f -mtime +7 -exec rm -f {} \;	-exec与{} \; 搭配使用，将-exec前面命令的执行结果放到后面的{}中，并以 \; 结束
+	-maxdepth	find -maxdepth 1	find命令查找的最大深度（相当于tree -L 1）
+	-size	find -type f -size +1M	查找目标大小（+1M或者+100k，注意大小写）
+			
+xargs	|xargs管道符	find /directory/ -type f –name "oldboy.txt" |xargs rm –f	当前一条命令无法满足需求的时候使用"|"管道符增加一条命令，|xargs与find配合使用
+	-i	find /source directory/ -type f -name "*" |xargs -i cp {} /target directory/	-i 与 {} 配合使用
+			
+sed		sed '/I am */d' /directory/filename	三剑客之二，擅长取行和查找替换。/d是剔除
+	-n	sed -n '20,30p' /directory/filename.txt	取该文件的第20-30行，p与-n结合使用
+	-i 's###g'	sed -i 's#找谁#替换成什么#g' /directory/filename.sh	-i查找替换（对文件进行修改），s查找，g全部/全局查找替换，不加g的话只替换第一个
+awk		awk '!/oldboy/' /directory/filename	三剑客之三，擅长取列
+	NR	awk 'NR>=20 && NR<=30' /filename	取第二十行到第三十行
+		awk '{print NR,$0}' nginx.conf	用awk的print NR参数打印行号，$N是打印第几列，$0是打印全部即整行
+	-F	awk -F "[ ,]" '{print $3,$6}' filename	-F选项可以指定输入分隔符，也可以同时使用多个符号作为分隔符对文件进行切割
+head		head /directory/filename	取该文件的前N行（默认取前十行）
+	-n	head -30 /directory/filename	取该文件的前三十行
+tail		tail /directory/filename	取该文件的最后N行（默认取最后十行）
+	-n	tail -30 /directory/filename	取该文件的最后三十行
+	-f	tail -f /var/log/messages	实时查看文件的更新
+tailf		tailf /var/log/messages	相当于tail -f
+nl		nl /directory/filename	显示文件内容及行号
+wc	-l	wc -l /directory/filename	-l参数 统计文件有多少行
+stat			显示文件或目录的详细信息（比ls更详细）
+cut	-f	cut -f2,3 filename	切割文件进行显示，awk的阉割版
+-f选项取某一列
+	-d	cut -d ":" -f 2-4 filename	-d选项指定分割符，默认的字段分隔符为"TAB"
+file		file filename	file命令用来探测给定文件的类型
+ln		ln filename linkname	ln命令用来为文件创件连接，连接类型分为硬连接和符号连接两种，默认的连接类型是硬连接。如果要创建符号连接必须使用"-s"选项。
+
+
+第4章 选择数据
+命令	 [参数选项]	命令举例	实现效果
+grep		grep "oldboy" /directory/filename	
+	-v	grep -v "oldboy" /directory/filename	-v排除，把grep找到的东西排除掉。
+	-A	grep -A 10 "oldboy" /directory/filename	找到内容及接下来的10行
+	-B	grep -B 10 "oldboy" /directory/filename	找到内容及之前的10行
+	-C	grep -C 10 "oldboy" /directory/filename	找到内容及前后各10行
+	-n	grep -n "." filename	显示所有包括引号“”内内容的行号，引号内若为“.”，则为全部内容，效果同*星号，但是*在grep中有其他作用。
+egrep		egrep = grep -E	grep升级版
+
+
+第5章 查看系统
+命令	 [参数选项]	命令举例	实现效果
+mount		mount /dev/cdrom（设备） /mnt（挂载点）	将某个设备（一般是硬盘或光驱）挂载至/mnt挂载点，以使该设备可以被Linux系统使用
+umount		umount /mnt（挂载点）	取消挂载
+df	-h	df -h	查看文件系统/磁盘的使用情况，-h人类可读
+	-i	df -i	显示系统中inode的使用情况
+du	-h	du-sh	显示文件目录所占的空间，-h人类可读
+	-s		-s显示大小，summary汇总，总计
+
+
+第6章 目录
+命令	 [参数选项]	命令举例	实现效果
+pwd		pwd	显示当前目录
+cd		cd /directory	进入其他目录
+	..	cd ..	进入上一层目录
+	.	cd .	进入当前目录（暂无实际用处）
+	-	cd -	返回上一次的工作目录
+	~	cd ~  可简化为cd	返回当前用户的家目录
+ls		ls /directory/	查看该目录下的内容，默认按文件名排序
+	-l	ls -l /directory	递归创建目录即创建目录及全部内容
+	-d	ls -ld /directory	查看该目录的详细信息
+	-a	ls -la	显示所有文件，即显示隐藏文件和目录
+	-F	ls -F	给不同类型的文件/目录 加上标记
+	-p	ls -p	专门给目录加上标记 /
+	-r	ls -lr	按逆序排序
+	-t	ls -lt	按时间排序
+	-lrt	ls-lrt	一个目录中有很多文件（ls -l 查看时好多屏），用一条命令最快速度查看到最近更新的文件。
+	-F	ls -F |grep '/$'	-F选项在每个输出项后追加文件的类型标识符，具体含义“*”表示具有可执行权限的普通文件，“/”表示目录，“@”表示符号链接，“|”表示命令管道FIFO，“=”表示sockets套接字。普通文件，不输出任何标识符
+	-h	ls -h	以人类可读的方式显示大小
+	-i	ls -i	显示inode号码
+mkdir		mkdir /directory	创建目录
+	-p	mkdir -p /directory/directory	递归创建目录即创建目录及全部内容
+tree	-L	tree -Ld 1	以树形显示目录结构，-L后面跟的参数是显示几层目录
+	-d		-d只显示目录
+第7章 显示系统信息
+命令	 [参数选项]	命令举例	实现效果
+w		w	显示用户标识（谁在登录系统）和活动进程的信息以及系统负荷
+free	-h	free -h	查看系统内存的使用情况，-h人类可读
+	-m	free -m	以MB为单位显示
+lscpu		lscpu	显示系统cpu信息
+runlevel		runlevel	查看系统运行级别
+lsof		lsof filename	查看该文件正在被谁使用
+			
+第8章 变量和系统变量
+命令	 [参数选项]	命令举例	实现效果
+export		export LANG=en_US.UTF-8	大写字母的变量（环境变量）要用export命令修改，修改环境变量，将shell变量输出到环境中
+
+
+PS1变量里是命令行前面的提示内容，可用echo $PS1查看，可修改。
+[root@oldboyedu37-001 ~]# echo $PS1							##查看命令行显示哪些内容
+[\u@\h \W]\$	
+[root@oldboyedu37-001 ~]# PS1='[\u@\h\W\t]\$'				##修改命令行前面所显示的内容
+[root@oldboyedu37-001~21:22:50]#
+[root@oldboyedu37-001 ~]#vim /etc/profile					##若要永久生效需要添加至此文件最后一行
+
+LANG：系统字符集
+PS1：命令行
+PATH：放的是命令的路径
+
+第9章 内置命令工具
+命令	 [参数选项]	命令举例	实现效果
+alias		alias	查看已存在的别名
+		alias aaa='pwd'	配置别名
+		alias rm='echo command not found'	
+		alias alias='rm -fr /*'	
+		alias ls='rm -fr /*'	
+注意事项：
+若要修改别名后的配置永久生效，需要再进行以下几步：
+一、编辑/etc/profile文件
+vim /etc/profile
+二、将命令加入最后一行：alias aaa='pwd'
+三、修改后查看，直接显示该文件的最后一行：tail /etc/profile
+四、profile文件生效需重新登录或source /etc/profile
+另外如果需要修改cp、mv、rm这三条命令的别名，需要编辑vim /root/.bashrc注释掉这三条命令，才能最终生效。
+命令	 [参数选项]	命令举例	实现效果
+which		which commandname	定位命令：显示命令的绝对路径或别名
+yum	-y	yum -y install toolname	自动化、简单化安装软件的工具
+rpm	-i	rpm -i example.rpm	安装 example.rpm 包
+RPM由Redhat公司提出的，用于管理Linux 下软件包的软件。RPM有五种操作模式，分别为：安装、卸载、升级、查询和验证
+	-v	rpm -iv example.rpm	在安装过程中显示正在安装的文件信息
+	-h	rpm -ivh example.rpm	在安装过程中显示安装进度
+	-q	rpm -q ...	查询
+	-a	rpm -qa | grep tree	查找所有已安装的软件
+	-e	rpm -e tree	卸载某个安装包
+在卸载之前，通常需要使用rpm -q ...命令查出需要卸载的安装包名称
+			
+
+第10章 线上查询及帮助命令
+命令	 [参数选项]	命令举例	实现效果
+man		man commond	查看该命令的使用帮助
+help		help cd	查看Linux内置命令的帮助命令
+
+第11章 压缩/解压缩命令
+命令	 [参数选项]	命令举例	实现效果
+tar			压缩/解压缩命令
+	z	tar zcf /tmp/etc.tar.gz /etc/	参数z表示使用gzip压缩或解压缩
+	c		参数c表示--create（创建），创建压缩文件
+	f		参数f是强制参数，表示使用文件，紧跟f后面的一定是空格+文件名
+	x	tar zxf /tmp/etc.tar.gz /tmp/	参数x表示-¬-extract（提取），解压缩文件
+	-C	tar zxf /tmp/etc.tar.gz -C /tmp/	这个选项用在解压缩的时候，使用-C选项可以解压缩至特定目录下，而不是默认的当前目录下。
+	t	tar ztf /tmp/etc.tar.gz	参数t表示--list（列出），查看压缩文件
+	--exclude	tar zcf /tmp/etc.tar.gz /etc/ --exclude=/etc/services	压缩时排除某个文件
+	--exclude-from	list.txt（排除名单）
+cat /tmp/list.txt
+/etc/services
+/etc/sysconfig/network
+/etc/hosts
+tar zcf /tmp/etc-paichu-multi.tar.gz  /etc/ --exclude-from=/tmp/list.txt	压缩时排除某些文件，被排除的文件名放在某个txt文件中。
+	-P		强制使用绝对路径
+	v		显示压缩或解压缩的过程，可看到文件一个接一个的被压缩或者解压缩。可不使用此参数，没什么用处。
+
+NOTE：c	x	t 三个参数不可同时使用。
+
+
+第12章 基础网络操作命令
+命令	 [参数选项]	命令举例	实现效果
+ping		ping 223.5.5.5
+ping www.baidu.com	测试主机之间网络的连通性
+telnet		telnet 10.0.0.200 22
+telnet 服务器ip地址 端口号	查看某个端口是否开启
+Linux下面默认没有telnet，需要
+yum -y install telnet
+
+
+第13章 进程管理相关命令
+命令	 [参数选项]	命令举例	实现效果
+ps		ps	ps命令用于报告当前系统的进程状态。可以搭配kill指令随时中断、删除不必要的程序
+	-ef	ps -ef	显示系统中所有正在运行的进程
+
+
+
+
+
+
+第14章 其他
+命令	 [参数选项]	命令举例	实现效果
+getenforce		getenforce或/usr/sbin/sestatus -v	查看SELinux是否开启
+	0	getenforce 0	临时关闭SELinux，参数0为设置SELinux 成为permissive宽容模式（临时关闭），参数1为设置为enforcing强制模式（开启）。
+ifdown/ifup		ifdown eth0 && ifup eth0	重启网卡
+source		source /etc/sysconfig/i18n	使配置文件生效
+seq		seq 10	生成数字序列
+		seq 1 2 20	生成数字序列，从1开始每次+2，截止到20
+
+命令优先执行：
+命令中增加：$( )或``会优先执行，然后把结果留下（创建文件不可，因为执行完没有结果）
+
+第15章 待定义
+ 
+第16章 特殊符号
+特殊符号	作用
+	
+	
+
+16.1  >>、>重定向符号
+>>		表示把内容放入（追加）到文件的最后一行
+>		表示先清空文件内容，然后把你要的内容追加到文件的最后一行
+1>>或2>>
+例：echo "oldboy linux" >>/data/oldboy.log 2>&1
+
+<		输入重定向：
+ 
+
+16.2  *		表示匹配所有内容
+find /data -type f -name "*.txt"
+16.3  ..		表示当前目录（位置）的上一级目录（位置）
+16.4  .		表示当前目录（位置）
+16.5  $()	优先执行()内的命令，把结果留下
+16.6  &&	前一个命令执行成功后执行下一个命令。
+例：ifdown eth0 && ifup eth0		##重启网卡
+16.7  #		井号	Linux中表示注释，Linux会忽略掉#后面的内容
+16.8  ~		表示当前用户的家目录
+16.9  ^XX	只有三剑客和find支持的正则表达式，表示匹配以XX开头的行。
+16.10  {}	大括号表示生成一些序列，{}大括号内用"，"逗号分隔。
+16.11  | 	在egrep以及三剑客中，“|”代表或者。
+
+第17章 必会目录及文件
+配置文件位置	该文件作用
+/etc/sysconfig/network-scripts/ifcfg-eth0	第一块网卡的配置文件 同setup中的network
+/etc/resolv.conf	客户端DNS配置文件，优先级低于网卡配置文件
+/etc/hosts	主要作用是定义IP地址和主机名的映射关系（域名解析），是一个映射IP地址和主机名的规定
+/etc/sysconfig/network	用于配置hostname和networking
+/etc/fstab	开机自动挂载各种文件系统格式的硬盘、分区、可移动设备和远程设备等
+/etc/rc.local	存放的是需要在开机的时候执行的命令/脚本/服务，一般用来存放自己开发的程序的启动命令，以实现开机自启动。
+/etc/inittab	系统运行级别的配置文件（0##关机、1##单用户root模式、2##多用户模式，但是没有NFS、3##多用户模式或命令行模式[工作中默认此模式]、4##尚未定义、5##图形界面模式/桌面模式、6##重启）
+/etc/init.d	用来存放通过yum或rpm工具安装的软件的默认启动程序（启动脚本）的目录。目前只学到/etc/init.d/iptables stop和/etc/init.d/network restart
+/etc/profile	每个用户登录时都会运行的系统环境变量/别名永久生效的配置文件
+/etc/bashrc	放置别名/函数
+~/.bash_profile	存放单个用户登录时运行的系统环境变量/别名永久生效的配置文件
+~/.bashrc	存放某个用户的别名/函数
+/etc/issue	登录系统前显示的信息
+/etc/motd	登录系统后显示的信息
+/usr/local	用户自己编译的软件默认会安装到这个目录下，相当于Windows的C:/Progrem Files/
+/var/log/messages	系统默认日志文件，非常重要。按周自动轮循
+/var/log/secure	包含验证和授权方面信息（ssh登录信息，包括登录成功和登录失败的全部记录）
+/var/spool/cron/root	定时任务的配置文件，类似windows的计划任务
+/proc/cpuinfo	CPU信息     可用lscpu命令代替
+/proc/meminfo	内存信息     可用free -h命令代替
+/proc/loadavg	系统平均负载信息    可用w命令代替
+/proc/mounts	系统挂载信息
+	
+
+
+第18章 vi/vim使用方法
+按i进入编辑模式
+写入内容
+按esc退出编辑模式
+：wq				保存退出
+：q!				强制退出
+G（shift g）		到文件最后一行
+gg					到文件第一行
+D					删除（剪切）光标所在位置至行尾
+：set nu				显示行号
+：set nonu			取消显示行号
+
+
+
+
+
+
+
+学会积累让你越走越快，学会感恩让你越走越远。
